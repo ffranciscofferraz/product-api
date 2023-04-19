@@ -1,3 +1,3 @@
-module github.com/ffranciscofferraz/product-api
+module github.com/franciscofferraz/product-api
 
 go 1.20

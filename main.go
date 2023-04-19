@@ -8,7 +8,7 @@ import (
 	"os/signal"
 	"time"
 
-	"github.com/ffranciscofferraz/product-api/handlers"
+	"github.com/franciscofferraz/product-api/handlers"
 )
 
 func main() {
