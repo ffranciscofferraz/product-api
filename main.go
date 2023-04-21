@@ -47,7 +47,7 @@ func main() {
 
 	// create a new server
 	s := http.Server{
-		Addr:         "127.0.0.1",
+		Addr:         "127.0.0.1:9090",
 		Handler:      sm,
 		ErrorLog:     l,
 		ReadTimeout:  5 * time.Second,
