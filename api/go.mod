@@ -1,10 +1,9 @@
-module github.com/franciscofferraz/coffee-shop
+module github.com/franciscofferraz/coffee-shop/api
 
 go 1.20
 
-require github.com/gorilla/mux v1.8.0
-
 require (
+	github.com/gorilla/mux v1.8.0
 	github.com/Masterminds/goutils v1.1.1 // indirect
 	github.com/Masterminds/semver/v3 v3.2.1 // indirect
 	github.com/Masterminds/sprig/v3 v3.2.3 // indirect

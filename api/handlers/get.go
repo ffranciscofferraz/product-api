@@ -3,7 +3,7 @@ package handlers
 import (
 	"net/http"
 
-	"github.com/franciscofferraz/coffee-shop/data"
+	"github.com/franciscofferraz/coffee-shop/api/data"
 )
 
 // swagger:route GET /products products listProducts

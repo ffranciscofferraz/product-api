@@ -3,7 +3,7 @@ package handlers
 import (
 	"net/http"
 
-	"github.com/franciscofferraz/coffee-shop/data"
+	data "github.com/franciscofferraz/coffee-shop/api/data"
 )
 
 func (p *Products) Update(rw http.ResponseWriter, r *http.Request) {

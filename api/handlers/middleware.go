@@ -4,7 +4,7 @@ import (
 	"context"
 	"net/http"
 
-	"github.com/franciscofferraz/coffee-shop/data"
+	"github.com/franciscofferraz/coffee-shop/api/data"
 )
 
 func (p *Products) MiddlewareValidateProduct(next http.Handler) http.Handler {
