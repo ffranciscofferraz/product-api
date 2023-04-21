@@ -1,7 +1,7 @@
 package handlers
 
 import (
-	"context"
+	"fmt"
 	"log"
 	"net/http"
 	"strconv"
@@ -10,78 +10,34 @@ import (
 	"github.com/gorilla/mux"
 )
 
+type KeyProduct struct{}
+
 type Products struct {
 	l *log.Logger
+	v *data.Validation
 }
 
-func NewProducts(l *log.Logger) *Products {
-	return &Products{l}
+func NewProducts(l *log.Logger, v *data.Validation) *Products {
+	return &Products{l, v}
 }
 
-func (p *Products) GetProducts(rw http.ResponseWriter, r *http.Request) {
-	p.l.Println("Handle GET Products")
+var ErrInvalidProductPath = fmt.Errorf("Invalid Path, path should be /products/[id]")
 
-	productsList := data.GetProducts()
-
-	err := productsList.ToJSON(rw)
-	if err != nil {
-		http.Error(rw, "Unable to marshal json", http.StatusInternalServerError)
-	}
+type GenericError struct {
+	Message string `json:"message"`
 }
 
-func (p *Products) AddProduct(rw http.ResponseWriter, r *http.Request) {
-	p.l.Println("Handle POST Product")
-
-	prod := r.Context().Value(KeyProduct{}).(*data.Product)
-
-	data.AddProduct(prod)
+type ValidationError struct {
+	Messages []string `json:"messages"`
 }
 
-func (p *Products) UpdateProduct(rw http.ResponseWriter, r *http.Request) {
-	p.l.Println("Handle PUT Product")
-
+func getProductID(r *http.Request) int {
 	vars := mux.Vars(r)
 
 	id, err := strconv.Atoi(vars["id"])
 	if err != nil {
-		http.Error(rw, "Unable to convert id", http.StatusBadRequest)
+		panic(err)
 	}
 
-	prod := r.Context().Value(KeyProduct{}).(*data.Product)
-
-	err = data.UpdateProduct(id, prod)
-	if err == data.ErrProductNotFound {
-		http.Error(rw, "Product not found", http.StatusNotFound)
-		return
-	}
-
-	if err != nil {
-		http.Error(rw, "Product not found", http.StatusInternalServerError)
-		return
-	}
-}
-
-type KeyProduct struct{}
-
-func (p Products) MiddlewareProductValidation(next http.Handler) http.Handler {
-	return http.HandlerFunc(func(rw http.ResponseWriter, r *http.Request) {
-		product := &data.Product{}
-
-		err := product.FromJSON(r.Body)
-		if err != nil {
-			http.Error(rw, "Error reading product", http.StatusBadRequest)
-			return
-		}
-
-		err = product.Validate()
-		if err != nil {
-			http.Error(rw, "Error validating product", http.StatusBadRequest)
-			return
-		}
-
-		ctx := context.WithValue(r.Context(), KeyProduct{}, product)
-		req := r.WithContext(ctx)
-
-		next.ServeHTTP(rw, req)
-	})
+	return id
 }

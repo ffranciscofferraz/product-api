@@ -8,54 +8,70 @@ import (
 	"os/signal"
 	"time"
 
+	"github.com/go-openapi/runtime/middleware"
+
+	"github.com/franciscofferraz/coffee-api/data"
 	"github.com/franciscofferraz/coffee-api/handlers"
 	"github.com/gorilla/mux"
 )
 
 func main() {
 
-	l := log.New(os.Stdout, "product-api", log.LstdFlags)
+	l := log.New(os.Stdout, "products-api ", log.LstdFlags)
+	v := data.NewValidation()
 
-	productsHandler := handlers.NewProducts(l)
+	ph := handlers.NewProducts(l, v)
 
-	serveMux := mux.NewRouter()
+	sm := mux.NewRouter()
 
-	// GET Routes
-	getRouter := serveMux.Methods(http.MethodGet).Subrouter()
-	getRouter.HandleFunc("/products", productsHandler.GetProducts)
+	getR := sm.Methods(http.MethodGet).Subrouter()
+	getR.HandleFunc("/products", ph.ListAll)
+	getR.HandleFunc("/products/{id:[0-9]+}", ph.ListSingle)
 
-	// PUT Routes
-	putRouter := serveMux.Methods(http.MethodPut).Subrouter()
-	putRouter.HandleFunc("/products/{id:[0-9]+}", productsHandler.UpdateProduct)
-	putRouter.Use(productsHandler.MiddlewareProductValidation)
+	putR := sm.Methods(http.MethodPut).Subrouter()
+	putR.HandleFunc("/products", ph.Update)
+	putR.Use(ph.MiddlewareValidateProduct)
 
-	// POST Routes
-	postRouter := serveMux.Methods(http.MethodPost).Subrouter()
-	postRouter.HandleFunc("/products/new", productsHandler.AddProduct)
-	postRouter.Use(productsHandler.MiddlewareProductValidation)
+	postR := sm.Methods(http.MethodPost).Subrouter()
+	postR.HandleFunc("/products", ph.Create)
+	postR.Use(ph.MiddlewareValidateProduct)
 
-	server := &http.Server{
-		Addr:         ":9090",
-		Handler:      serveMux,
+	deleteR := sm.Methods(http.MethodDelete).Subrouter()
+	deleteR.HandleFunc("/products/{id:[0-9]+}", ph.Delete)
+
+	opts := middleware.RedocOpts{SpecURL: "/swagger.yaml"}
+	sh := middleware.Redoc(opts, nil)
+
+	getR.Handle("/docs", sh)
+	getR.Handle("/swagger.yaml", http.FileServer(http.Dir("./")))
+
+	// create a new server
+	s := http.Server{
+		Addr:         "127.0.0.1",
+		Handler:      sm,
+		ErrorLog:     l,
+		ReadTimeout:  5 * time.Second,
+		WriteTimeout: 10 * time.Second,
 		IdleTimeout:  120 * time.Second,
-		ReadTimeout:  1 * time.Second,
-		WriteTimeout: 1 * time.Second,
 	}
 
 	go func() {
-		err := server.ListenAndServe()
+		l.Println("Starting server on port 9090")
+
+		err := s.ListenAndServe()
 		if err != nil {
-			l.Fatal(err)
+			l.Printf("Error starting server: %s\n", err)
+			os.Exit(1)
 		}
 	}()
 
-	signalChannel := make(chan os.Signal)
-	signal.Notify(signalChannel, os.Interrupt)
-	signal.Notify(signalChannel, os.Kill)
+	c := make(chan os.Signal, 1)
+	signal.Notify(c, os.Interrupt)
+	signal.Notify(c, os.Kill)
 
-	sig := <-signalChannel
-	l.Println("Received terminate, shutdown", sig)
+	sig := <-c
+	log.Println("Got signal:", sig)
 
-	timeoutContext, _ := context.WithTimeout(context.Background(), 30*time.Second)
-	server.Shutdown(timeoutContext)
+	ctx, _ := context.WithTimeout(context.Background(), 30*time.Second)
+	s.Shutdown(ctx)
 }
