@@ -17,7 +17,7 @@ import (
 
 func main() {
 
-	l := log.New(os.Stdout, "products-api ", log.LstdFlags)
+	l := log.New(os.Stdout, "coffee-api ", log.LstdFlags)
 	v := data.NewValidation()
 
 	ph := handlers.NewProducts(l, v)
