@@ -83,7 +83,7 @@ var productList = []*Product{
 		UpdatedOn:   time.Now().UTC().String(),
 	},
 	&Product{
-		ID:          1,
+		ID:          2,
 		Name:        "Esspresso",
 		Description: "Short and strong coffee without milk",
 		Price:       1.99,

@@ -1,6 +1,6 @@
 package handlers
 
-import "github.com/franciscofferraz/coffee-api/data"
+import "github.com/franciscofferraz/coffee-shop/data"
 
 type errorResponseWrapper struct {
 	Body GenericError

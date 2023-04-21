@@ -10,14 +10,14 @@ import (
 
 	"github.com/go-openapi/runtime/middleware"
 
-	"github.com/franciscofferraz/coffee-api/data"
-	"github.com/franciscofferraz/coffee-api/handlers"
+	"github.com/franciscofferraz/coffee-shop/data"
+	"github.com/franciscofferraz/coffee-shop/handlers"
 	"github.com/gorilla/mux"
 )
 
 func main() {
 
-	l := log.New(os.Stdout, "coffee-api ", log.LstdFlags)
+	l := log.New(os.Stdout, "api ", log.LstdFlags)
 	v := data.NewValidation()
 
 	ph := handlers.NewProducts(l, v)
