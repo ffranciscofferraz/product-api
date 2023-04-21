@@ -6,7 +6,7 @@ import (
 	"net/http"
 	"strconv"
 
-	"github.com/franciscofferraz/product-api/data"
+	"github.com/franciscofferraz/coffee-api/data"
 	"github.com/gorilla/mux"
 )
 
@@ -70,6 +70,12 @@ func (p Products) MiddlewareProductValidation(next http.Handler) http.Handler {
 		err := product.FromJSON(r.Body)
 		if err != nil {
 			http.Error(rw, "Error reading product", http.StatusBadRequest)
+			return
+		}
+
+		err = product.Validate()
+		if err != nil {
+			http.Error(rw, "Error validating product", http.StatusBadRequest)
 			return
 		}
 
