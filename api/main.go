@@ -12,43 +12,46 @@ import (
 
 	"github.com/franciscofferraz/coffee-shop/api/data"
 	"github.com/franciscofferraz/coffee-shop/api/handlers"
+	muxHandlers "github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
 )
 
 func main() {
 
 	l := log.New(os.Stdout, "api ", log.LstdFlags)
-	v := data.NewValidation()
+	validation := data.NewValidation()
 
-	ph := handlers.NewProducts(l, v)
+	productsHandler := handlers.NewProducts(l, validation)
 
-	sm := mux.NewRouter()
+	serveMux := mux.NewRouter()
 
-	getR := sm.Methods(http.MethodGet).Subrouter()
-	getR.HandleFunc("/products", ph.ListAll)
-	getR.HandleFunc("/products/{id:[0-9]+}", ph.ListSingle)
+	getRequest := serveMux.Methods(http.MethodGet).Subrouter()
+	getRequest.HandleFunc("/products", productsHandler.ListAll)
+	getRequest.HandleFunc("/products/{id:[0-9]+}", productsHandler.ListSingle)
 
-	putR := sm.Methods(http.MethodPut).Subrouter()
-	putR.HandleFunc("/products", ph.Update)
-	putR.Use(ph.MiddlewareValidateProduct)
+	putRequest := serveMux.Methods(http.MethodPut).Subrouter()
+	putRequest.HandleFunc("/products", productsHandler.Update)
+	putRequest.Use(productsHandler.MiddlewareValidateProduct)
 
-	postR := sm.Methods(http.MethodPost).Subrouter()
-	postR.HandleFunc("/products", ph.Create)
-	postR.Use(ph.MiddlewareValidateProduct)
+	postRequest := serveMux.Methods(http.MethodPost).Subrouter()
+	postRequest.HandleFunc("/products", productsHandler.Create)
+	postRequest.Use(productsHandler.MiddlewareValidateProduct)
 
-	deleteR := sm.Methods(http.MethodDelete).Subrouter()
-	deleteR.HandleFunc("/products/{id:[0-9]+}", ph.Delete)
+	deleteRequest := serveMux.Methods(http.MethodDelete).Subrouter()
+	deleteRequest.HandleFunc("/products/{id:[0-9]+}", productsHandler.Delete)
 
 	opts := middleware.RedocOpts{SpecURL: "/swagger.yaml"}
-	sh := middleware.Redoc(opts, nil)
+	swaggerHandler := middleware.Redoc(opts, nil)
 
-	getR.Handle("/docs", sh)
-	getR.Handle("/swagger.yaml", http.FileServer(http.Dir("./")))
+	getRequest.Handle("/docs", swaggerHandler)
+	getRequest.Handle("/swagger.yaml", http.FileServer(http.Dir("./")))
+
+	corsHandler := muxHandlers.CORS(muxHandlers.AllowedOrigins([]string{"http://localhost:3000"}))
 
 	// create a new server
 	s := http.Server{
 		Addr:         "127.0.0.1:9090",
-		Handler:      sm,
+		Handler:      corsHandler(serveMux),
 		ErrorLog:     l,
 		ReadTimeout:  5 * time.Second,
 		WriteTimeout: 10 * time.Second,
