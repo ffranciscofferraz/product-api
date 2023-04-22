@@ -14,15 +14,12 @@ import (
 	hclog "github.com/hashicorp/go-hclog"
 )
 
-var logLevel = env.String("LOG_LEVEL", false, "debug", "Log output level for the server [debug, info, trace]")
-var basePath = env.String("BASE_PATH", false, "./imagestore", "Base path to save images")
-
 func main() {
 
 	l := hclog.New(
 		&hclog.LoggerOptions{
 			Name:  "product-images",
-			Level: hclog.LevelFromString(*logLevel),
+			Level: hclog.LevelFromString("DEBUG"),
 		},
 	)
 
@@ -31,7 +28,7 @@ func main() {
 
 	// create the storage class, use local storage
 	// max filesize 5MB
-	stor, err := files.NewLocal(*basePath, 1024*1000*5)
+	stor, err := files.NewLocal("./imagestore", 1024*1000*5)
 	if err != nil {
 		l.Error("Unable to create storage", "error", err)
 		os.Exit(1)
@@ -55,7 +52,7 @@ func main() {
 	gh := sm.Methods(http.MethodGet).Subrouter()
 	gh.Handle(
 		"/images/{id:[0-9]+}/{filename:[a-zA-Z]+\\.[a-z]{3}}",
-		http.StripPrefix("/images/", http.FileServer(http.Dir(*basePath))),
+		http.StripPrefix("/images/", http.FileServer(http.Dir("./imagestore"))),
 	)
 	gh.Use(mw.GzipMiddleware)
 
@@ -71,7 +68,7 @@ func main() {
 
 	// start the server
 	go func() {
-		l.Info("Starting server", "bind_address", "127.0.0.1:9090")
+		l.Info("Starting server", "bind_address", "127.0.0.1:9091")
 
 		err := s.ListenAndServe()
 		if err != nil {
