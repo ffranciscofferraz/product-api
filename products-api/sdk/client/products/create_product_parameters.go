@@ -16,7 +16,7 @@ import (
 
 	strfmt "github.com/go-openapi/strfmt"
 
-	"github.com/franciscofferraz/coffee-shop/api/sdk/models"
+	"github.com/franciscofferraz/coffee-shop/products-api/sdk/models"
 )
 
 // NewCreateProductParams creates a new CreateProductParams object

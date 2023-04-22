@@ -1,4 +1,4 @@
-module github.com/franciscofferraz/coffee-shop/api
+module github.com/franciscofferraz/coffee-shop/products-api
 
 go 1.20
 

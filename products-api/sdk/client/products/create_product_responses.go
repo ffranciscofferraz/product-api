@@ -13,7 +13,7 @@ import (
 
 	strfmt "github.com/go-openapi/strfmt"
 
-	"github.com/franciscofferraz/coffee-shop/api/sdk/models"
+	"github.com/franciscofferraz/coffee-shop/products-api/sdk/models"
 )
 
 // CreateProductReader is a Reader for the CreateProduct structure.

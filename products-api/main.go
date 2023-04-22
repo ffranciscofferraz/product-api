@@ -10,8 +10,8 @@ import (
 
 	"github.com/go-openapi/runtime/middleware"
 
-	"github.com/franciscofferraz/coffee-shop/api/data"
-	"github.com/franciscofferraz/coffee-shop/api/handlers"
+	"github.com/franciscofferraz/coffee-shop/products-api/data"
+	"github.com/franciscofferraz/coffee-shop/products-api/handlers"
 	muxHandlers "github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
 )

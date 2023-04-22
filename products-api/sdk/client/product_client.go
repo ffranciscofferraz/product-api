@@ -11,7 +11,7 @@ import (
 	"github.com/go-openapi/runtime"
 	"github.com/go-openapi/strfmt"
 
-	"github.com/franciscofferraz/coffee-shop/api/sdk/client/products"
+	"github.com/franciscofferraz/coffee-shop/products-api/sdk/client/products"
 )
 
 // Default product HTTP client.

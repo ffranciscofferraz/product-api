@@ -6,7 +6,7 @@ import (
 	"net/http"
 	"strconv"
 
-	"github.com/franciscofferraz/coffee-shop/api/data"
+	"github.com/franciscofferraz/coffee-shop/products-api/data"
 	"github.com/gorilla/mux"
 )
 

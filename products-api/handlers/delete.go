@@ -3,7 +3,7 @@ package handlers
 import (
 	"net/http"
 
-	"github.com/franciscofferraz/coffee-shop/api/data"
+	"github.com/franciscofferraz/coffee-shop/products-api/data"
 )
 
 func (p *Products) Delete(rw http.ResponseWriter, r *http.Request) {
