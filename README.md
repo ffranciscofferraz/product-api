@@ -1,4 +1,4 @@
-# Services
+## Services
 
 ### Product API ./product-api
 RESTful Go based JSON API built using the Gorilla framework. The API allows CRUD based operations on a product list.
