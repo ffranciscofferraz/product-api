@@ -62,7 +62,7 @@ func (p *Products) ListSingle(rw http.ResponseWriter, r *http.Request) {
 
 	// get exchange rate
 	rr := &protos.RateRequest{
-		Base:        protos.Currencies(protos.Currency_value["EUR"]),
+		Base:        protos.Currencies(protos.Currencies_value["EUR"]),
 		Destination: protos.Currencies(protos.Currencies_value["GBP"]),
 	}
 
