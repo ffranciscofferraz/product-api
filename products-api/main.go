@@ -9,7 +9,9 @@ import (
 	"time"
 
 	"github.com/go-openapi/runtime/middleware"
+	"google.golang.org/grpc"
 
+	protos "github.com/franciscofferraz/coffee-shop/currency/protos/currency"
 	"github.com/franciscofferraz/coffee-shop/products-api/data"
 	"github.com/franciscofferraz/coffee-shop/products-api/handlers"
 	muxHandlers "github.com/gorilla/handlers"
@@ -21,7 +23,15 @@ func main() {
 	l := log.New(os.Stdout, "api ", log.LstdFlags)
 	validation := data.NewValidation()
 
-	productsHandler := handlers.NewProducts(l, validation)
+	conn, err := grpc.Dial("localhost:9092", grpc.WithInsecure())
+	if err != nil {
+		panic(err)
+	}
+
+	defer conn.Close()
+	currencyClient := protos.NewCurrencyClient(conn)
+
+	productsHandler := handlers.NewProducts(l, validation, currencyClient)
 
 	serveMux := mux.NewRouter()
 
