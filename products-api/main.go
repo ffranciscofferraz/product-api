@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/go-openapi/runtime/middleware"
+	"github.com/hashicorp/go-hclog"
 	"google.golang.org/grpc"
 
 	protos "github.com/franciscofferraz/coffee-shop/currency/protos/currency"
@@ -20,7 +21,7 @@ import (
 
 func main() {
 
-	l := log.New(os.Stdout, "api ", log.LstdFlags)
+	l := hclog.Default()
 	validation := data.NewValidation()
 
 	conn, err := grpc.Dial("localhost:9092", grpc.WithInsecure())
@@ -29,14 +30,23 @@ func main() {
 	}
 
 	defer conn.Close()
-	currencyClient := protos.NewCurrencyClient(conn)
 
-	productsHandler := handlers.NewProducts(l, validation, currencyClient)
+	// create client
+	cc := protos.NewCurrencyClient(conn)
+
+	// create database instance
+	db := data.NewProductsDB(cc, l)
+
+	productsHandler := handlers.NewProducts(l, validation, db)
 
 	serveMux := mux.NewRouter()
 
+	// handlers for API
 	getRequest := serveMux.Methods(http.MethodGet).Subrouter()
+	getRequest.HandleFunc("/products", productsHandler.ListAll).Queries("currency", "{[A-Z]{3}}")
 	getRequest.HandleFunc("/products", productsHandler.ListAll)
+
+	getRequest.HandleFunc("/products/{id:[0-9]+}", productsHandler.ListSingle).Queries("currency", "{[A-Z]{3}}")
 	getRequest.HandleFunc("/products/{id:[0-9]+}", productsHandler.ListSingle)
 
 	putRequest := serveMux.Methods(http.MethodPut).Subrouter()
@@ -56,24 +66,24 @@ func main() {
 	getRequest.Handle("/docs", swaggerHandler)
 	getRequest.Handle("/swagger.yaml", http.FileServer(http.Dir("./")))
 
-	corsHandler := muxHandlers.CORS(muxHandlers.AllowedOrigins([]string{"http://localhost:3000"}))
+	corsHandler := muxHandlers.CORS(muxHandlers.AllowedOrigins([]string{"*"}))
 
 	// create a new server
 	s := http.Server{
 		Addr:         "127.0.0.1:9090",
 		Handler:      corsHandler(serveMux),
-		ErrorLog:     l,
+		ErrorLog:     l.StandardLogger(&hclog.StandardLoggerOptions{}),
 		ReadTimeout:  5 * time.Second,
 		WriteTimeout: 10 * time.Second,
 		IdleTimeout:  120 * time.Second,
 	}
 
 	go func() {
-		l.Println("Starting server on port 9090")
+		l.Info("Starting server on port 9090")
 
 		err := s.ListenAndServe()
 		if err != nil {
-			l.Printf("Error starting server: %s\n", err)
+			l.Error("Error starting server: %s\n", err)
 			os.Exit(1)
 		}
 	}()
