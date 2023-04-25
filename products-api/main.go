@@ -86,5 +86,6 @@ func main() {
 	log.Println("Got signal:", sig)
 
 	ctx, _ := context.WithTimeout(context.Background(), 30*time.Second)
+
 	s.Shutdown(ctx)
 }
